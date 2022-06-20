@@ -25,7 +25,7 @@ from sipsimple.account.publication import PresencePublisher, DialogPublisher
 from sipsimple.account.registration import Registrar
 from sipsimple.account.subscription import MWISubscriber, PresenceWinfoSubscriber, DialogWinfoSubscriber, PresenceSubscriber, SelfPresenceSubscriber, DialogSubscriber
 from sipsimple.account.xcap import XCAPManager
-from sipsimple.core import Credentials, SIPURI, ContactURIFactory
+from sipsimple.core import Credentials, SIPURI, ContactURIFactory, Route
 from sipsimple.configuration import ConfigurationManager, Setting, SettingsGroup, SettingsObject, SettingsObjectID
 from sipsimple.configuration.datatypes import AudioCodecList, MSRPConnectionModel, MSRPRelayAddress, MSRPTransport, NonNegativeInteger, Path, SIPAddress, SIPProxyAddress, SRTPKeyNegotiation, SIPTransport, STUNServerAddressList, VideoCodecList, XCAPRoot
 from sipsimple.configuration.settings import SIPSimpleSettings
@@ -170,6 +170,7 @@ class Account(SettingsObject):
         self._dialog_version = None
         self.trusted_cas = []
         self.ca_list = None
+        self.actual_route = None
 
     def start(self):
         if self._started or self._deleted:
@@ -187,6 +188,7 @@ class Account(SettingsObject):
         notification_center.add_observer(self, sender=self._presence_subscriber)
         notification_center.add_observer(self, sender=self._self_presence_subscriber)
         notification_center.add_observer(self, sender=self._dialog_subscriber)
+        notification_center.add_observer(self,sender=self, name='ActualRoute')
 
         self.xcap_manager.init()
         if self.enabled:
@@ -509,6 +511,10 @@ class Account(SettingsObject):
 
     def _NH_DialogSubscriptionDidFail(self, notification):
         self._dialog_version = None
+        
+    def _NH_ActualRoute(self, notification):
+        print(f'Route for {notification.data.account}! , {notification.data.route}!')
+        self.actual_route = [Route(address=notification.data.route.address, port=notification.data.route.port, transport=notificatification.data.route.transport)]
 
     def _activate(self):
         with self._activation_lock:
