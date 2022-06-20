@@ -514,7 +514,7 @@ class Account(SettingsObject):
         
     def _NH_ActualRoute(self, notification):
         print(f'Route for {notification.data.account}! , {notification.data.route}!')
-        self.actual_route = [Route(address=notification.data.route.address, port=notification.data.route.port, transport=notificatification.data.route.transport)]
+        self.actual_route = [Route(address=notification.data.route.address, port=notification.data.route.port, transport=notification.data.route.transport)]
 
     def _activate(self):
         with self._activation_lock:
