@@ -175,6 +175,7 @@ class Registrar(object):
                         while True:
                             notification = self._data_channel.wait()
                             if notification.name == 'SIPRegistrationDidSucceed':
+                                notification_center.post_notification('ActualRoute', sender=self.account, data=NotificationData(route=route, account = self.account))
                                 break
                             if notification.name == 'SIPRegistrationDidEnd':
                                 raise RegistrationError('Registration expired', retry_after=int(random.uniform(60, 120)))  # registration expired while we were trying to re-register
@@ -186,7 +187,8 @@ class Registrar(object):
                             raise RegistrationError('Authentication failed', retry_after=int(random.uniform(60, 120)))
                         elif e.data.code == 408:
                             # Timeout
-                            raise RegistrationError('Request timeout', retry_after=int(random.uniform(15, 40)))
+                            notification_center.post_notification('ActualRoute', sender=self.account, data=NotificationData(route=route, account = self.account))
+                            continue
                         elif e.data.code == 423:
                             # Get the value of the Min-Expires header
                             if e.data.min_expires is not None and e.data.min_expires > self.account.sip.register_interval:
